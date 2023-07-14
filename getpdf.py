@@ -1,23 +1,25 @@
 import gspread
 import requests
+from pathlib import Path
 
 import google.auth
 import google.auth.transport.requests
 from google.oauth2 import service_account
 
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets.readonly",
+    "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
 SPREADSHEET_NAME = "Wings (2023-2024)"
 INCLUDED_SHEETS = ["Cheat Sheet"]
 PATH_TO = "docs/"
 PDF_FILENAME = "rw-cheatsheet"
+CREDENTIALS = str(Path.home()) + "/secrets/rwcs-credentials.json"
 
 
 def main():
     credentials = service_account.Credentials.from_service_account_file(
-        "cred.json",
+        CREDENTIALS,
         scopes=SCOPES,
     )
     auth_req = google.auth.transport.requests.Request()
