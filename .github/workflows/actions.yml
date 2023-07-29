@@ -11,7 +11,9 @@ jobs:
       - name: checkout repo content
         uses: actions/checkout@v2 # checkout the repository content to github runner
 
-      - name: run decrypt script
+      - name: decrypt Google credentials
+        env:
+          GOOGLE_API_DECRYPT_PW: ${{ secrets.GOOGLE_API_DECRYPT_PW }}
         run: sh ./decrypt-credentials.sh
 
       - name: setup python
