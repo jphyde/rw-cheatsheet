@@ -2,7 +2,7 @@ name: run getpdf.py
 
 on:
   schedule:
-    - cron: "0 15 * * *" # runs at 3pm
+    - cron: "30 19 * * *" # runs at 7:30 UTC = 3:30 ET
 
 jobs:
   build:
