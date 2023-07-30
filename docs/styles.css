@@ -9,9 +9,38 @@ body {
 }
 
 #header {
-  color: red;
+  color: #cf0821;
 }
 
 div#pdf {
   flex: 1;
+}
+
+h1 {
+  text-align: center;
+  font-family: Rockwell, Georgia, serif;
+  text-shadow: 1px 1px 1px white, 2px 2px 1px #3e0209;
+  margin-bottom: 0px;
+}
+
+h1 + div {
+  font-family: "Brush Script MT", cursive;
+  font-size: 24px;
+  text-align: center;
+  margin-top: -8px;
+  margin-left: 188px;
+  color: #cf0821;
+}
+
+h1 + div + div {
+  text-align: center;
+  font-family: "Lucida Sans Typewriter", "Courier New", monospace;
+  color: black;
+  font-size: 10px;
+}
+
+h1 > img {
+  max-height: 50px;
+  width: auto;
+  height: auto;
 }
