@@ -37,11 +37,12 @@ div#subtitle {
   color: #cf0821;
 }
 
-div#header > div + div + div {
+div#updated {
   text-align: center;
   font-family: "Lucida Sans Typewriter", "Courier New", monospace;
   color: black;
   font-size: 10px;
+  margin-bottom: 6px;
 }
 
 div#title > img {
