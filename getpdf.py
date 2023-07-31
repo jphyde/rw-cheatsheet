@@ -1,6 +1,7 @@
 import gspread
 import requests
 from pathlib import Path
+from datetime import datetime, timezone
 
 import google.auth
 import google.auth.transport.requests
@@ -14,6 +15,7 @@ SPREADSHEET_NAME = "Wings (2023-2024)"
 INCLUDED_SHEETS = ["Cheat Sheet"]
 PATH_TO = "docs/"
 PDF_FILENAME = "rw-cheatsheet"
+UPD_FILENAME = "updated"
 CREDENTIALS = str(Path.home()) + "/secrets/rwcs-credentials.json"
 
 
@@ -37,13 +39,37 @@ def main():
 
     hideSheets(spreadsheet, excludedSheetIds)
 
+    headers = {
+        "Authorization": "Bearer " + access_token,
+    }
+
+    doc_url = (
+        "https://www.googleapis.com/drive/v3/files/"
+        + spreadsheet.id
+        + "?fields=modifiedTime"
+    )
+    response = requests.get(doc_url, headers=headers)
+    res_obj = response.json()
+    t = res_obj["modifiedTime"]
+
+    inc_date_f = "%Y-%m-%dT%H:%M:%S.%fZ"
+    out_date_f = "%Y-%m-%d %I:%M:%S %p"
+
+    dt = datetime.strptime(t, inc_date_f)  # create dt obj
+    et_dt = dt.replace(tzinfo=timezone.utc).astimezone(
+        tz=None
+    )  # convert from UTC to ET
+    et_dt_f = et_dt.strftime(out_date_f)
+
+    # TODO: compare prev to new?
+    upd = open(PATH_TO + UPD_FILENAME + ".txt", "w")
+    upd.write(et_dt_f)
+    upd.close
+
     url = (
         "https://docs.google.com/spreadsheets/export?format=pdf&portrait=false&id="
         + spreadsheet.id
     )
-    headers = {
-        "Authorization": "Bearer " + access_token,
-    }
     response = requests.get(url, headers=headers)
     pdf = open(PATH_TO + PDF_FILENAME + ".pdf", "wb")
     pdf.write(response.content)
