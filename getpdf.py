@@ -11,7 +11,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
-SPREADSHEET_NAME = "Wings (2023-2024)"
+SPREADSHEET_NAME = "rw-cheatsheet"
 INCLUDED_SHEETS = ["Cheat Sheet"]
 PATH_TO = "docs/"
 PDF_FILENAME = "rw-cheatsheet"
@@ -37,7 +37,8 @@ def main():
         if s.title not in INCLUDED_SHEETS:
             excludedSheetIds.append(s.id)
 
-    hideSheets(spreadsheet, excludedSheetIds)
+    if excludedSheetIds:
+        hideSheets(spreadsheet, excludedSheetIds)
 
     headers = {
         "Authorization": "Bearer " + access_token,
@@ -75,7 +76,8 @@ def main():
     pdf.write(response.content)
     pdf.close
 
-    showSheets(spreadsheet, excludedSheetIds)
+    if excludedSheetIds:
+        showSheets(spreadsheet, excludedSheetIds)
 
 
 def hideSheets(spreadsheet, ids):
