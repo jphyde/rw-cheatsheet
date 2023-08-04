@@ -1,5 +1,6 @@
 import gspread
 import requests
+import json
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -15,11 +16,17 @@ SPREADSHEET_NAME = "Wings (2023-2024)"
 INCLUDED_SHEETS = ["Cheat Sheet"]
 PATH_TO = "docs/"
 PDF_FILENAME = "rw-cheatsheet"
-UPD_FILENAME = "updated"
+UPD_JSON = "updated.json"
 CREDENTIALS = str(Path.home()) + "/secrets/rwcs-credentials.json"
+DATE_F = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 def main():
+    with open("docs/updated.json") as f:
+        data = json.load(f)
+    lastModified = datetime.strptime(data["modifiedTime"], DATE_F)
+    lastSync = datetime.strptime(data["syncTime"], DATE_F)
+
     credentials = service_account.Credentials.from_service_account_file(
         CREDENTIALS,
         scopes=SCOPES,
@@ -31,51 +38,53 @@ def main():
     client = gspread.authorize(credentials)
     spreadsheet = client.open(SPREADSHEET_NAME)
 
-    sheets = spreadsheet.worksheets()
-    excludedSheetIds = []
-    for s in sheets:
-        if s.title not in INCLUDED_SHEETS:
-            excludedSheetIds.append(s.id)
-
-    hideSheets(spreadsheet, excludedSheetIds)
-
     headers = {
         "Authorization": "Bearer " + access_token,
     }
+    modifiedTime = getSheetModifiedTime(headers, spreadsheet.id)
 
-    doc_url = (
-        "https://www.googleapis.com/drive/v3/files/"
-        + spreadsheet.id
-        + "?fields=modifiedTime"
-    )
-    response = requests.get(doc_url, headers=headers)
+    # hide/show of sheets artificially changes the modifiedTime, this attempts to get around that
+    if (modifiedTime - lastSync).total_seconds() > 5 and modifiedTime > lastModified:
+        # for some reason the modified time is changing slightly on Google Sheets
+        # so have to use a 5 second buffer
+        sheets = spreadsheet.worksheets()
+        excludedSheetIds = []
+        for s in sheets:
+            if s.title not in INCLUDED_SHEETS:
+                excludedSheetIds.append(s.id)
+
+        if excludedSheetIds:
+            hideSheets(spreadsheet, excludedSheetIds)
+
+        url = (
+            "https://docs.google.com/spreadsheets/export?format=pdf&portrait=false&id="
+            + spreadsheet.id
+        )
+        response = requests.get(url, headers=headers)
+        pdf = open(PATH_TO + PDF_FILENAME + ".pdf", "wb")
+        pdf.write(response.content)
+        pdf.close
+
+        if excludedSheetIds:
+            showSheets(spreadsheet, excludedSheetIds)
+
+        syncTime = getSheetModifiedTime(headers, spreadsheet.id)
+        modified_dict = {
+            "modifiedTime": modifiedTime.strftime(DATE_F),
+            "syncTime": syncTime.strftime(DATE_F),
+        }
+        json_object = json.dumps(modified_dict)
+        print(json_object)
+        with open(PATH_TO + UPD_JSON, "w") as outfile:
+            outfile.write(json_object)
+
+
+def getSheetModifiedTime(headers, id):
+    url = "https://www.googleapis.com/drive/v3/files/" + id + "?fields=modifiedTime"
+    response = requests.get(url, headers=headers)
     res_obj = response.json()
     t = res_obj["modifiedTime"]
-
-    inc_date_f = "%Y-%m-%dT%H:%M:%S.%fZ"
-    out_date_f = "%Y-%m-%d %I:%M:%S %p"
-
-    dt = datetime.strptime(t, inc_date_f)  # create dt obj
-    et_dt = dt.replace(tzinfo=timezone.utc).astimezone(
-        tz=None
-    )  # convert from UTC to ET
-    et_dt_f = et_dt.strftime(out_date_f)
-
-    # TODO: compare prev to new?
-    upd = open(PATH_TO + UPD_FILENAME + ".txt", "w")
-    upd.write(et_dt_f)
-    upd.close
-
-    url = (
-        "https://docs.google.com/spreadsheets/export?format=pdf&portrait=false&id="
-        + spreadsheet.id
-    )
-    response = requests.get(url, headers=headers)
-    pdf = open(PATH_TO + PDF_FILENAME + ".pdf", "wb")
-    pdf.write(response.content)
-    pdf.close
-
-    showSheets(spreadsheet, excludedSheetIds)
+    return datetime.strptime(t, DATE_F)
 
 
 def hideSheets(spreadsheet, ids):
