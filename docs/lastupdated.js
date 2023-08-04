@@ -1,12 +1,22 @@
-var txtFile = new XMLHttpRequest();
-var allText = "file not found";
-txtFile.onreadystatechange = function () {
-  if (txtFile.readyState === XMLHttpRequest.DONE && txtFile.status == 200) {
-    allText = txtFile.responseText;
-    allText = allText.split("\n").join("<br>");
-  }
+fetch("./updated.json")
+  .then((response) => response.json())
+  .then((json) => displayUpdStr(json));
 
-  document.getElementById("upd-time").innerHTML = allText;
-};
-txtFile.open("GET", "updated.txt", true);
-txtFile.send(null);
+function displayUpdStr(json) {
+  var jsonDate = json["modifiedTime"];
+  var displayTime = new Date(jsonDate);
+  var options = {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: "false",
+  };
+  document.getElementById("upd-time").innerHTML = displayTime.toLocaleString(
+    "en-US",
+    options
+  );
+}
