@@ -37,7 +37,8 @@ def main():
         if s.title not in INCLUDED_SHEETS:
             excludedSheetIds.append(s.id)
 
-    hideSheets(spreadsheet, excludedSheetIds)
+    if excludedSheetIds:
+        hideSheets(spreadsheet, excludedSheetIds)
 
     headers = {
         "Authorization": "Bearer " + access_token,
@@ -75,7 +76,8 @@ def main():
     pdf.write(response.content)
     pdf.close
 
-    showSheets(spreadsheet, excludedSheetIds)
+    if excludedSheetIds:
+        showSheets(spreadsheet, excludedSheetIds)
 
 
 def hideSheets(spreadsheet, ids):
