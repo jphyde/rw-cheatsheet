@@ -25,7 +25,6 @@ def main():
     with open("docs/updated.json") as f:
         data = json.load(f)
     lastModified = datetime.strptime(data["modifiedTime"], DATE_F)
-    lastSync = datetime.strptime(data["syncTime"], DATE_F)
 
     credentials = service_account.Credentials.from_service_account_file(
         CREDENTIALS,
@@ -41,12 +40,12 @@ def main():
     headers = {
         "Authorization": "Bearer " + access_token,
     }
-    modifiedTime = getSheetModifiedTime(headers, spreadsheet.id)
+    modifiedObj = getSheetModifiedTimes(headers, spreadsheet.id)
+    modifiedTime = datetime.strptime(modifiedObj["modifiedTime"], DATE_F)
+    modifiedByPgmTime = datetime.strptime(modifiedObj["modifiedByMeTime"], DATE_F)
 
-    # hide/show of sheets artificially changes the modifiedTime, this attempts to get around that
-    if (modifiedTime - lastSync).total_seconds() > 5 and modifiedTime > lastModified:
-        # for some reason the modified time is changing slightly on Google Sheets
-        # so have to use a 5 second buffer
+    # only update if last modification was not by this pgm and more recent than stored modify date
+    if modifiedTime != modifiedByPgmTime and modifiedTime > lastModified:
         sheets = spreadsheet.worksheets()
         excludedSheetIds = []
         for s in sheets:
@@ -68,11 +67,7 @@ def main():
         if excludedSheetIds:
             showSheets(spreadsheet, excludedSheetIds)
 
-        syncTime = getSheetModifiedTime(headers, spreadsheet.id)
-        modified_dict = {
-            "modifiedTime": modifiedTime.strftime(DATE_F),
-            "syncTime": syncTime.strftime(DATE_F),
-        }
+        modified_dict = {"modifiedTime": modifiedTime.strftime(DATE_F)}
         json_object = json.dumps(modified_dict)
         print(json_object)
         with open(PATH_TO + UPD_JSON, "w") as outfile:
@@ -85,6 +80,16 @@ def getSheetModifiedTime(headers, id):
     res_obj = response.json()
     t = res_obj["modifiedTime"]
     return datetime.strptime(t, DATE_F)
+
+
+def getSheetModifiedTimes(headers, id):
+    url = (
+        "https://www.googleapis.com/drive/v3/files/"
+        + id
+        + "?fields=modifiedTime,modifiedByMeTime"
+    )
+    response = requests.get(url, headers=headers)
+    return response.json()
 
 
 def hideSheets(spreadsheet, ids):
