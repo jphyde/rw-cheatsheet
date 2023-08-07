@@ -1,16 +1,23 @@
 html {
-  height: 100%;
+  height: 99.6%;
 }
 body {
   margin: 0;
-  min-height: 100vh;
+  min-height: 99.6vh;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+  body {
+    background-color: rgb(82 86 89);
+  }
+}
+
 #header {
   color: #cf0821;
+  background-color: white;
 }
 
 div#pdf {
