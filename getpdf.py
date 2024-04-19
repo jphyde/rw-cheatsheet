@@ -12,7 +12,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
-SPREADSHEET_NAME = "Wings (2023-2024)"
+SPREADSHEET_NAME = "Red Wings tracker"
 INCLUDED_SHEETS = ["Cheat Sheet"]
 PATH_TO = "docs/"
 PDF_FILENAME = "rw-cheatsheet"
