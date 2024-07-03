@@ -50,7 +50,7 @@ def main():
         sheets = spreadsheet.worksheets()
         excludedSheetIds = []
         for s in sheets:
-            if s.title not in INCLUDED_SHEETS and not isEmpty(s):
+            if s.title not in INCLUDED_SHEETS or isEmpty(s):
                 excludedSheetIds.append(s.id)
 
         if excludedSheetIds:
@@ -117,7 +117,8 @@ def toggleSheets(spreadsheet, ids, toggle):
 
 
 def isEmpty(sheet):
-    return sheet.acell(EMPTY_CHECK_CELL).value == ""
+    print(sheet.acell(EMPTY_CHECK_CELL).value)
+    return sheet.acell(EMPTY_CHECK_CELL).value == None
 
 
 main()
