@@ -117,7 +117,7 @@ def toggleSheets(spreadsheet, ids, toggle):
 
 
 def isEmpty(sheet):
-    return sheet.acell(EMPTY_CHECK_CELL) == ""
+    return sheet.acell(EMPTY_CHECK_CELL).value == ""
 
 
 main()
