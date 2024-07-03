@@ -3,6 +3,7 @@ name: run getpdf.py
 on:
   schedule:
     - cron: "30 19 * * *" # runs at 7:30 UTC = 3:30 ET
+  workflow_dispatch:
 
 jobs:
   build:
