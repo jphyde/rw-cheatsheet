@@ -13,7 +13,8 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 SPREADSHEET_NAME = "Red Wings tracker"
-INCLUDED_SHEETS = ["Cheat Sheet"]
+INCLUDED_SHEETS = ["Cheat Sheet", "Injured Cheat Sheet"]
+EMPTY_CHECK_CELL = "C2"
 PATH_TO = "docs/"
 PDF_FILENAME = "rw-cheatsheet"
 UPD_JSON = "updated.json"
@@ -49,7 +50,7 @@ def main():
         sheets = spreadsheet.worksheets()
         excludedSheetIds = []
         for s in sheets:
-            if s.title not in INCLUDED_SHEETS:
+            if s.title not in INCLUDED_SHEETS and not isEmpty(s):
                 excludedSheetIds.append(s.id)
 
         if excludedSheetIds:
@@ -113,6 +114,10 @@ def toggleSheets(spreadsheet, ids, toggle):
         body["requests"].append(request)
 
     spreadsheet.batch_update(body=body)
+
+
+def isEmpty(sheet):
+    return sheet.acell(EMPTY_CHECK_CELL) == ""
 
 
 main()
