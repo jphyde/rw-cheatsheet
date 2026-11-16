@@ -1,5 +1,5 @@
 google-auth==2.62.2
-google-auth-oauthlib==1.0.0
+google-auth-oauthlib==1.5.0
 gspread==5.10.0
 oauthlib==3.2.2
 pathlib==1.0.1
